@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="utf-8">
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/d3.hexbin.v0.min.js"></script>
+
+<style>
+     
+     .axis path,
+     .axis line {
+       fill: none;
+       stroke: none;
+       shape-rendering: crispEdges;
+     }
+     .hexagon {
+       fill: none;
+       stroke: none;
+       stroke-width: 1px;
+       hover: {
+          fill: yellow;}
+     }
+
+</style>
+</head>
+
+<body>
+
+<script>
+
+function mover(d) {
+  var el = d3.select(this)
+          .transition()
+          .duration(5)         
+          .style("fill-opacity", 0.5)
+          .style("stroke", "black")
+          .style("stroke-width", 1)
+          ;
+}
+
+function mout(d) { 
+     var el = d3.select(this)
+        .transition()
+        .duration(1000)
+        .style("fill-opacity", 1)
+        .style("stroke", "none")
+        .style("stroke-width", 0)
+        ;
+};
+
+</script>
+
+
+<script type="text/javascript">
+
+var margin = {top: 20, right: 20, bottom: 20, left: 20},
+    w = 1000 - margin.left - margin.right,
+    h = 1000 - margin.top - margin.bottom;
+ 
+var color = d3.scale.sqrt()
+    .domain([1, 100])
+    .range(["black", "#FF5651"])
+    .interpolate(d3.interpolateLab);
+ 
+var x = d3.scale.linear()
+    .domain([0, 100])
+    .range([0, w]);
+ 
+var y = d3.scale.linear()
+    .domain([0, 105])
+    .range([h, 0]);
+ 
+var yinv = d3.scale.linear()
+    .domain([0, 100])
+    .range([0, h]);
+ 
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+ 
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+ 
+var hexbin = d3.hexbin()
+    .size([w, h])
+    .radius(x(1)); //diameter 15
+ 
+var svg = d3.select("body").append("svg")
+    .attr("width", w + margin.left + margin.right)
+    .attr("height", h + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" +margin.left+ "," +margin.top+ ")");
+ 
+var points = [];
+ 
+d3.csv("combinedShots_All.csv", function(error, data) {
+ 
+  data.forEach(function(d) {
+    d.X = ((+d.X)*2);
+    d.Y = +d.Y;
+    points.push([x(d.Y), y(d.X)]);
+  });
+ 
+svg.selectAll(".hex")
+    .data(data)
+    .enter().append("clipPath")
+    .attr("id", "clip")
+    .append("rect")
+    .attr("class", "mesh")
+    .attr("width", w)
+    .attr("height", h);
+ 
+svg.append("g")
+    .attr("clip-path", "url(#clip)")
+    .selectAll(".hexagon")
+    .data(hexbin(points))
+    .enter().append("path")
+    .attr("class", "hexagon")
+    .attr("d", hexbin.hexagon())
+    .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+    .style("fill", function(d) { return color(d.length); })
+    .on("mouseover", mover)
+    .on("mouseout", mout)
+    ;
+ 
+});
+
+d3.select("#chart").attr("align","center");
+ 
+</script>
+
+</body>
+</html>
