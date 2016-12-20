@@ -95,7 +95,7 @@ var svg = d3.select("body").append("svg")
  
 var points = [];
  
-d3.csv("combinedShots_All.csv", function(error, data) {
+d3.csv("combinedShots_all.csv", function(error, data) {
  
   data.forEach(function(d) {
     d.X = ((+d.X)*2);
